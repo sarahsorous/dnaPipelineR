@@ -1,4 +1,4 @@
-# dna-automatic-annotation-pipeline
+# dnaPipelineR
 A prototype for a semi-supervised automatic annotation pipeline that assists annotators in extracting and annotating pieces of text from transcripts, with a primary application to UK Parliamentary Hansard debates and discussions of labour law remedies for purposes of discourse network analysis (dna).
 
 When a user runs the pipeline it will: take .txt files a user selects and automatically extract who said the text (actors), claims and opinions they express (statements), how they frame it (concepts), what area they are discussing (right), and what mood they express (sentiment). The output will be a spreadsheet with the extracted statements and annotation.
