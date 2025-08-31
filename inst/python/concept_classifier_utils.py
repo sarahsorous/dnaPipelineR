@@ -37,18 +37,18 @@ def assign_concepts(
     df = pd.read_csv(input_csv)
     texts = df["statement"].astype(str).tolist()
 
-    # Encode with SBERT (to match training)
+    # Encode with SBERT
     print("🔡 Encoding statements with SBERT...")
     X = sbert.encode(texts, show_progress_bar=True)
 
     # SVM was saved with probability=False -> use decision_function
-    scores = svm.decision_function(X)  # shape: (n_samples, n_classes) or (n_samples,) for binary
+    scores = svm.decision_function(X)  
 
-    # Normalize shape for binary case to (n_samples, 2): class 0 score is -score, class 1 is +score
+    # Normalise shape for binary case to (n_samples, 2): class 0 score is -score, class 1 is +score
     if scores.ndim == 1:
         scores = np.stack([-scores, scores], axis=1)
 
-    # Convert margins to pseudo-probabilities (keeps your threshold semantics)
+    # Convert margins to pseudo-probabilities
     probs = _softmax(scores)
 
     # Top-k indices by prob (k up to 3, but never exceeding #classes)
