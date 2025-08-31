@@ -1,4 +1,4 @@
-# right_classifier_utils.py (assign_right_labels)
+# right_classifier_utils.py
 
 import pandas as pd
 import numpy as np
@@ -23,9 +23,9 @@ def extract_pos_features(texts, nlp):
 def assign_right_labels(
     input_csv: str = "actor_org_statements_confidence.csv",
     output_csv: str = "statement_rights.csv",
-    model_path: str = "right_svm.joblib",                 # <-- fixed default name
+    model_path: str = "right_svm.joblib",                 
     encoder_path: str = "right_label_encoder.joblib",
-    sbert_path: str = None                                 # kept for backward compat; ignored
+    sbert_path: str = None                                 # kept for backward compat; ignore
 ):
     print("🔍 Assigning rights...")
 
@@ -33,10 +33,10 @@ def assign_right_labels(
     svm = joblib.load(model_path)
     label_encoder = joblib.load(encoder_path)
 
-    # Instantiate SBERT by name (uses local cache). Do NOT joblib.load a transformer.
+    # Instantiate SBERT by name (uses local cache)
     sbert = SentenceTransformer('paraphrase-multilingual-mpnet-base-v2')
 
-    # Load spaCy model (needed for POS). Fail fast with a clear message if missing.
+    # Load spaCy model
     try:
         nlp = spacy.load("en_core_web_sm")
     except OSError as e:
@@ -55,7 +55,7 @@ def assign_right_labels(
     pos_feats = extract_pos_features(texts, nlp)
     X = np.hstack([embeddings, pos_feats])
 
-    # Predict with the trained SVM (probability=False in training → use predict)
+    # Predict with the trained SVM
     preds = svm.predict(X)
     pred_labels = label_encoder.inverse_transform(preds)
 
