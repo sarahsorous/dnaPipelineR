@@ -1,3 +1,5 @@
+# sentiment_analyser_utils.py
+
 import pandas as pd
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
 
@@ -9,7 +11,7 @@ def analyse_sentiment(
 ):
     print("💬 Performing sentiment analysis...", flush=True)
 
-    # Load the data
+    # Load data
     df = pd.read_csv(input_csv)
 
     # Load sentiment pipeline (cached after first use)
