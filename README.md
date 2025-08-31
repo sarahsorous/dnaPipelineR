@@ -17,7 +17,7 @@ The output is a structured `.csv file` where each row is a statement annotated w
 - Sentiment label
 - Confidence scores
 
-The pipeline is designed with future integration into the Java-based DNA software Discourse [Discourse Network Analyzer](https://github.com/leifeld/dna) (DNA, v3.0.11; Leifeld, 2024) in mind, enabling researchers to map actor–concept networks more quickly and consistently than through manual annotation alone. For additional materials including: the manually annotated dataset used for training models, code and results from experiments on classifiers, and an example output folder generated from the pipeline please visit the seperate repository [dnaPipelineR-materials](https://github.com/sarahtunmore/dnaPipelineR-materials).
+The pipeline is designed with future integration into the Java-based DNA software Discourse [Discourse Network Analyzer](https://github.com/leifeld/dna) (DNA, v3.0.11; Leifeld, 2024) in mind, enabling researchers to map actor–concept networks more quickly and consistently than through manual annotation alone. For additional materials including: the manually annotated dataset used for training models, code and results from experiments on classifiers, and an example output folder generated from the pipeline please visit the separate repository [dnaPipelineR-materials](https://github.com/sarahtunmore/dnaPipelineR-materials).
 
 **dnaPipelineR** was created as part of a Master’s Extended Research Project (MSc Data Science, University of Manchester, 2025) under the supervision of Prof. Philip Leifeld.
 
@@ -29,7 +29,7 @@ The pipeline consists of is three main scripts (found in `R/` folder):
 *For less experienced programmers/new users to the pipeline*, you can still use this to see if all requirements are met and if they are not you will be asked to `run setup_pipeline.R` which will run the installs for you.
 *For returning users to the pipeline*, this script can serve as a quick sanity check before running the pipeline to avoid configuration errors.
 
-- `setup_pipeline`: This script is deigned for *new* users to the pipeline, primarily to create a conda environment **dna-pipeline** and install the necessary packages into it. It checks that conda is present, and if not will download minicoda. It also checks that necessary R packages are installed and loaded. Once run this script will not need to be run again, any debgugging can be performed with check_pipeline.
+- `setup_pipeline`: This script is designed for *new* users to the pipeline, primarily to create a conda environment **dna-pipeline** and install the necessary packages into it. It checks that conda is present, and if not will download Minicoda. It also checks that necessary R packages are installed and loaded. Once run this script will not need to be run again, any debugging can be performed with check_pipeline.
 
 - `run_pipeline`: This script runs the pipeline fully. It uses pretrained models (found in `inst/models`) and prewritten .py functions (found in `inst/python`). Once run, it will ask the user to select a text file they want to analyse, then the pipeline will run and output a spreadsheet with the annotations, which will be saved the users working directory.
 
@@ -105,7 +105,7 @@ Columns include:
 - `speaker_org`: Speaker + organisational affiliation (parsed from Hansard headings).
 - `statement`: The extracted claim/utterance.
 - `confidence`: confidence score generated from statement classifier, how confident model is that the text is a statement.
-- `concept`: 21 class concept label(s) from codebok
+- `concept`: 21 class concept label(s) from codebook
 - `right`: 6 class right label from codebook
 - `sentiment_label`: positive/neutral/negative sentiment
 
@@ -148,7 +148,7 @@ Check your working directory (`getwd()`); choose a folder you can write to.
 # Notes
 - optimised for UK Hansard labour-law debates. Transfer to other corpora may require tweaks to speaker-heading heuristic and/or retraining
 - The concept classifier provides its Top-3 best estimate when its confidence is low (below a threshold), this supports a semi-automatic workflow where a human can pick the best plausible option
-- The prototype is not yet intergrated with the Discourse Network Analyzer software, but its implementation in Rstudio supports further project development via the `rDNA` package (which allows Discourse Network Analyzer and Rstudio talk to eachother)
+- The prototype is not yet integrated with the Discourse Network Analyzer software, but its implementation in Rstudio supports further project development via the `rDNA` package (which allows Discourse Network Analyzer and Rstudio talk to eachother)
 
 # Credits
 **Codebook**: Prof Aristea Koukiadaki
