@@ -29,7 +29,7 @@ def assign_right_labels(
 ):
     print("🔍 Assigning rights...")
 
-    # Load SVM & label encoder saved during training
+    # Load SVM and label encoder saved during training
     svm = joblib.load(model_path)
     label_encoder = joblib.load(encoder_path)
 
@@ -49,7 +49,7 @@ def assign_right_labels(
     df = pd.read_csv(input_csv)
     texts = df["statement"].astype(str).tolist()
 
-    # Encode features exactly like training: SBERT + POS (concatenated)
+    # Encode features exactly like training: SBERT and POS (concatenated)
     print("🔡 Encoding SBERT embeddings...")
     embeddings = sbert.encode(texts, show_progress_bar=True)
     pos_feats = extract_pos_features(texts, nlp)
