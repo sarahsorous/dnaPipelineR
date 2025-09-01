@@ -1,5 +1,6 @@
 # statement_segmenter_utils.py
 
+# Load libraries
 import pandas as pd
 import numpy as np
 import re
@@ -10,6 +11,7 @@ from sentence_transformers import SentenceTransformer
 from sklearn.preprocessing import normalize
 
 def extract_features(text, nlp):
+    # Extract lexical, structural, and POS-based features from text
     doc = nlp(text)
     pos_tags = [token.pos_ for token in doc]
 
@@ -25,15 +27,18 @@ def extract_features(text, nlp):
     }
 
 def split_into_sentences(text, nlp):
+    # Segment into sentences using spaCy
     doc = nlp(text)
     return [sent.text.strip() for sent in doc.sents]
 
 def starts_with_anaphora(sentence):
+    # Check if sentence begins with anaphora marker
     anaphora = ["this", "that", "these", "those", "they", "them", "he", "she", "it", "such", "the former", "the latter"]
     first_word = sentence.lower().split()[0] if sentence else ""
     return first_word in anaphora
 
 def group_similar_sentences(sentences, sbert, threshold=0.45, max_group_size=3):
+    # Group sentences if semantically similar or linked by anaphora
     if not sentences:
         return []
 
@@ -47,6 +52,7 @@ def group_similar_sentences(sentences, sbert, threshold=0.45, max_group_size=3):
             current_group = [sentences[i]]
             continue
 
+        # Cosine similarity with previous sentence
         sim = cosine_similarity(embeddings[i:i+1], embeddings[i-1:i])[0][0]
         if sim >= threshold or starts_with_anaphora(sentences[i]):
             current_group.append(sentences[i])
@@ -54,10 +60,12 @@ def group_similar_sentences(sentences, sbert, threshold=0.45, max_group_size=3):
             groups.append(" ".join(current_group))
             current_group = [sentences[i]]
 
+        # Force flush if group too large
         if len(current_group) >= max_group_size:
             groups.append(" ".join(current_group))
             current_group = []
 
+    # Append final group if still actuve
     if current_group:
         groups.append(" ".join(current_group))
 
@@ -66,6 +74,7 @@ def group_similar_sentences(sentences, sbert, threshold=0.45, max_group_size=3):
 def extract_statements(input_csv, model_path="MLP_statement_segmenter.joblib", output_csv="actor_org_statements_confidence.csv"):
     print("🔍 Extracting statements...")
 
+    # Load trained MLP and scaler
     artifact = joblib.load(model_path)
     if isinstance(artifact, dict):
         mlp = artifact["model"]
@@ -74,20 +83,24 @@ def extract_statements(input_csv, model_path="MLP_statement_segmenter.joblib", o
         mlp = artifact
         scaler = None
 
+    # Initialise SBERT + spaCy
     sbert = SentenceTransformer("paraphrase-multilingual-mpnet-base-v2")
     nlp = spacy.load("en_core_web_sm")
 
+    # Read input speeches
     df = pd.read_csv(input_csv)
     output = []
 
     for _, row in df.iterrows():
         speaker = row.get("speaker_org") or "UNKNOWN"
         speech = str(row.get("speech", ""))
+
+        # Split into sentences, then group by similarity / anaphora
         sentences = split_into_sentences(speech, nlp)
         chunks = group_similar_sentences(sentences, sbert, threshold=0.45, max_group_size=3)
 
         for chunk in chunks:
-            # Handcrafted features -> vector (preserve order from function)
+            # Extract handcrafted features as a vector
             feats = extract_features(chunk, nlp)
             feat_vector = np.array([list(feats.values())], dtype=np.float32)
 
@@ -95,17 +108,18 @@ def extract_statements(input_csv, model_path="MLP_statement_segmenter.joblib", o
             if scaler is not None:
                 feat_vector = scaler.transform(feat_vector)
 
-            # Embedding (L2-normalised to match training)
+            # SBERT embeddings (L2-normalised to match training)
             embed_vector = sbert.encode([chunk], convert_to_numpy=True)
             embed_vector = normalize(embed_vector, norm="l2")  # shape (1, dim)
 
-            # Concatenate
+            # Concatenate embeddings + features
             X = np.hstack([embed_vector, feat_vector])
 
-            # Predict
+            # Predict probability and label
             proba = mlp.predict_proba(X)[0][1]
             label = mlp.predict(X)[0]
 
+            # Keep only if positive = statement
             if label == 1:
                 output.append({
                     "speaker_org": speaker,
@@ -113,6 +127,7 @@ def extract_statements(input_csv, model_path="MLP_statement_segmenter.joblib", o
                     "confidence": round(float(proba), 4)
                 })
 
+    # Save extracted statements
     output_df = pd.DataFrame(output)
     output_df.to_csv(output_csv, index=False)
     print(f"✅ Statements extracted and saved to {output_csv}")
