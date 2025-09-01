@@ -1,5 +1,6 @@
 # sentiment_analyser_utils.py
 
+# Load libraries
 import pandas as pd
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
 
@@ -11,20 +12,23 @@ def analyse_sentiment(
 ):
     print("💬 Performing sentiment analysis...", flush=True)
 
-    # Load data
+    # Load input data
     df = pd.read_csv(input_csv)
 
-    # Load sentiment pipeline (cached after first use)
+    # Initialise HuggingFace sentiment-analysis
+    # downloads models on first use, then cached locally
     classifier = pipeline("sentiment-analysis", model=model_name, tokenizer=model_name)
 
-    # Apply sentiment analysis
+    # Apply sentiment analysis on each statement
+    # converts to string to avoid errors
     df['sentiment'] = df['statement'].apply(lambda x: classifier(str(x))[0]['label'])
 
     if map_labels:
+        # Map raw model labels to human-readable classes
         label_map = {"LABEL_0": "negative", "LABEL_1": "neutral", "LABEL_2": "positive"}
         df['sentiment_label'] = df['sentiment'].map(label_map)
 
-    # Export
+    # Save results with sentiment column
     df.to_csv(output_csv, index=False)
     print(f"✅ Sentiment saved to {output_csv}", flush=True)
 
