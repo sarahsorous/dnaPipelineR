@@ -1,8 +1,10 @@
 # speaker_org_attribution_utils.py
 
+# Load library
 import pandas as pd
 
 def clean_text(text):
+    # Normalise common punctuation to deal with formatting errors
     return (text
             .replace("’", "'")
             .replace("‘", "'")
@@ -12,14 +14,17 @@ def clean_text(text):
             .replace("—", "-"))
 
 def is_speaker_line(line, next_line):
+    # A speaker line is assumed to be followed by speech (not punctuation)
     line = line.strip()
     next_line = next_line.strip()
     if not line or not next_line:
         return False
+    # If line ends with punctuation, treat it as content and not a heading
     return not line[-1:] in {".", ",", ";", ":", "!", "?"}
 
 def extract_speaker_blocks_from_path(file_path):
     """Process a text file and return a list of dicts with speaker and speech."""
+    # Read in raw Hansard-style text
     with open(file_path, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
@@ -31,6 +36,7 @@ def extract_speaker_blocks_from_path(file_path):
         line = lines[i].strip()
         next_line = lines[i + 1].strip() if i + 1 < len(lines) else ""
 
+        # New speaker detected = flush previous block and start a new one
         if is_speaker_line(line, next_line):
             if current_speaker and current_text:
                 speaker_blocks.append({
@@ -42,19 +48,23 @@ def extract_speaker_blocks_from_path(file_path):
             i += 1
             continue
 
+        # Accumulate lines under current speaker
         if current_speaker:
             current_text.append(line)
 
         i += 1
 
+    # Append final block if one exists
     if current_speaker and current_text:
         speaker_blocks.append({
             "speaker_org": current_speaker,
             "speech": " ".join(current_text).strip()
         })
 
+    # Clean up speaker and speech text
     for block in speaker_blocks:
         block["speaker_org"] = clean_text(block["speaker_org"])
         block["speech"] = clean_text(block["speech"])
 
+    # Save output
     return pd.DataFrame(speaker_blocks)
